@@ -1,0 +1,21 @@
+[project]
+name = "nonebot-plugin-text-ban"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "zhongwen-4", email = "2401128923@qq.com"},
+]
+dependencies = [
+    "nonebot2>=2.4.0",
+    "nonebot-adapter-onebot>=2.4.6",
+    "nonebot-plugin-localstore>=0.7.1",
+    "nonebot-plugin-alconna>=0.53.1",
+    "pypinyin>=0.53.0",
+]
+requires-python = ">=3.10.0"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
