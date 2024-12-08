@@ -15,7 +15,7 @@ from .config import plugin_config, Config
 from nonebot.plugin import PluginMetadata
 
 __plugin_meta__ = PluginMetadata(
-    name="违禁词",
+    name="违禁词撤回",
     description="违禁词检测，检测到违禁词则禁言",
     usage="发送：前缀+help查看方法",
     config=Config,
