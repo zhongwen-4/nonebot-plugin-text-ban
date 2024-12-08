@@ -103,8 +103,12 @@ async def is_msg_handle(bot: Bot, event: GroupMessageEvent):
         logger.debug("发送人是超级用户，已忽略")
         return
     
-    if event.group_id not in data["group"]:
-        logger.debug("群聊未添加，已忽略")
+    if "group" in data:
+        if event.group_id not in data["group"]:
+            logger.debug("群聊未添加，已忽略")
+            return
+    else:
+        logger.debug("群未创建，已忽略")
         return
     
     if plugin_config.strict:
