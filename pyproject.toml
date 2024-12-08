@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-text-ban"
-version = "0.1.2"
+version = "0.1.3"
 description = "Default template for PDM package"
 authors = [
     {name = "zhongwen-4", email = "2401128923@qq.com"},
