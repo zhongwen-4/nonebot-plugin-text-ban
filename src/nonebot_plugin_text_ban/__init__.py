@@ -33,6 +33,7 @@ del_text = on_alconna(Alconna("del", Args['text', str]["model", int]), permissio
 add_group = on_alconna(Alconna("add_group", Args['group?', int]), permission= SUPERUSER | GROUP_OWNER | GROUP_ADMIN)
 del_group = on_alconna(Alconna("del_group", Args['group?', int]), permission= SUPERUSER | GROUP_OWNER | GROUP_ADMIN)
 operate = on_alconna(Alconna("operate", Args["operate", str]["user", int]["ban?", str]), permission= SUPERUSER | GROUP_OWNER | GROUP_ADMIN)
+get_list = on_alconna(Alconna("list"), permission= SUPERUSER | GROUP_ADMIN | GROUP_OWNER)
 
 alc = Alconna(
     "appeal",
@@ -103,12 +104,8 @@ async def is_msg_handle(bot: Bot, event: GroupMessageEvent):
         logger.debug("发送人是超级用户，已忽略")
         return
     
-    if "group" in data:
-        if event.group_id not in data["group"]:
-            logger.debug("群聊未添加，已忽略")
-            return
-    else:
-        logger.debug("群未创建，已忽略")
+    if event.group_id not in data["group"]:
+        logger.debug("群聊未添加，已忽略")
         return
     
     if plugin_config.strict:
@@ -346,3 +343,45 @@ async def help_handle():
     ]
 
     await help.finish("\n--------\n".join(msg))
+
+@get_list.handle()
+async def get_list_handle(bot: Bot, event: MessageEvent):
+    from nonebot.adapters.onebot.v11 import MessageSegment, Message
+
+    data = load_data(path)
+    text_list = []
+
+    if "msg" not in data:
+        await get_list.finish("违禁词列表是空的")
+
+    if not data["msg"]:
+        await get_list.finish("违禁词列表是空的")
+
+    for i in data["msg"]:
+        if i["type"] == 1:
+            text_list.append(f"{i['text']} --- 精确")
+        
+        if i["type"] == 2:
+            text_list.append(f"{i['text']} --- 模糊")
+
+    msg = Message(
+        [
+            MessageSegment.node_custom(
+                user_id= event.user_id,
+                nickname= event.sender.nickname if event.sender.nickname else "匿名用户",
+                content= "违禁词列表"
+            ),
+            MessageSegment.node_custom(
+                user_id= event.user_id,
+                nickname= event.sender.nickname if event.sender.nickname else "匿名用户",
+                content= "\n------\n".join(text_list)
+            )
+        ]
+    )
+
+    res_id = await bot.call_api("send_forward_msg", messages= msg)
+    await get_list.finish(
+        Message(
+            MessageSegment.forward(res_id)
+        )
+    )
