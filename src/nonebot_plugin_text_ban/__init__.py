@@ -339,6 +339,7 @@ async def help_handle():
         "del_group [group_id?]: 关闭本群聊违禁词, group_id为群号",
         "appeal: 申诉（内置会话补全，发送此命令会自动提示输入参数）",
         "operate [同意/拒绝] [ban?]: 同意/拒绝申诉，ban为t时是踢出，为tm时是踢出并拒绝加群申请",
+        "list: 违禁词列表",
         "PS: 参数中带?为可选参数"
     ]
 
