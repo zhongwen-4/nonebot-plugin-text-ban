@@ -55,6 +55,7 @@ def with_data(data, path):
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
+
 async def ban(bot: Bot, event: GroupMessageEvent):
     await bot.delete_msg(message_id= event.message_id)
     await bot.set_group_ban(group_id= event.group_id, user_id= event.user_id, duration= 60 * 60)
@@ -75,6 +76,29 @@ async def ban(bot: Bot, event: GroupMessageEvent):
     
     else:
         return "你的消息含有违禁词，请修改后发送。\nPS: 你也可以私聊我使用 appeal 申诉"
+    
+
+async def set_tips_msg(bot: Bot, event: GroupMessageEvent):
+    from nonebot.adapters.onebot.v11 import Message, MessageSegment
+    from nonebot import get_driver
+    import datetime
+
+    time = datetime.datetime.now().replace(microsecond= 0)
+
+    msg = await bot.get_msg(message_id= event.message_id)
+    need_msg= Message()
+    su = get_driver().config.superusers
+
+    for i in msg["message"]:
+        need_msg += MessageSegment(type= i["type"], data= i["data"])
+
+    for i in su:
+        _msg = [
+            f"群{event.group_id} 内{event.user_id}触发了违禁词",
+            f"触发时间: {time}",
+            f"触发内容: {need_msg}"
+        ]
+        await bot.send_private_msg(user_id= int(i), message= "\n".join(_msg))
 
 
 @driver.on_startup
@@ -115,6 +139,7 @@ async def is_msg_handle(bot: Bot, event: GroupMessageEvent):
 
             if set_a.issubset(set_b):
                 set_msg = await ban(bot, event)
+                await set_tips_msg(bot, event)
                 await add_text.finish(set_msg, at_sender= True)
 
     if plugin_config.pinyin:
@@ -125,11 +150,13 @@ async def is_msg_handle(bot: Bot, event: GroupMessageEvent):
             if i["type"] == 1:
                 if pinyin == pinyin_a:
                     set_msg = await ban(bot, event)
+                    await set_tips_msg(bot, event)
                     await add_text.finish(set_msg, at_sender= True)
             
             if i["type"] == 2:
                 if pinyin_a.issubset(pinyin) and pinyin_a != set():
                     set_msg = await ban(bot, event)
+                    await set_tips_msg(bot, event)
                     await add_text.finish(set_msg, at_sender= True)
 
     if plugin_config.ocr:
@@ -146,17 +173,20 @@ async def is_msg_handle(bot: Bot, event: GroupMessageEvent):
                 for i in data["msg"]:
                     if i["text"] in is_text:
                         set_msg = await ban(bot, event)
+                        await set_tips_msg(bot, event)
                         await add_text.finish(set_msg, at_sender= True)
     
     for i in data["msg"]:
         if i["type"] == 1:
             if i["text"] == msg:
                 set_msg = await ban(bot, event)
+                await set_tips_msg(bot, event)
                 await add_text.finish(set_msg, at_sender= True)
         
         if i["type"] == 2:
             if i["text"] in msg:
                 set_msg = await ban(bot, event)
+                await set_tips_msg(bot, event)
                 await add_text.finish(set_msg, at_sender= True)
 
 
@@ -339,11 +369,12 @@ async def help_handle():
         "del_group [group_id?]: 关闭本群聊违禁词, group_id为群号",
         "appeal: 申诉（内置会话补全，发送此命令会自动提示输入参数）",
         "operate [同意/拒绝] [ban?]: 同意/拒绝申诉，ban为t时是踢出，为tm时是踢出并拒绝加群申请",
-        "list: 违禁词列表",
+        "list : 违禁词列表",
         "PS: 参数中带?为可选参数"
     ]
 
     await help.finish("\n--------\n".join(msg))
+
 
 @get_list.handle()
 async def get_list_handle(bot: Bot, event: MessageEvent):
